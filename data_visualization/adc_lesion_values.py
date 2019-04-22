@@ -1,8 +1,10 @@
 import os
+
 import h5py
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn import metrics
+
 from lesion_extraction_2d.lesion_extractor_2d import get_train_data
 
 
@@ -80,6 +82,7 @@ def visualize_lesions(lesions, references, lesion_info, save=False, window=(None
             # Just display the plot on screen. Loop is paused until user closes the plot window
             print('Showing plot {} of {}'.format(i + 1, lesions_flat.shape[0]))
             plt.show()
+
 
 def apply_window(np_array, window):
     np_array[np_array < window[0]] = window[0]
@@ -166,7 +169,7 @@ def size_vs_value_score(lesions, labels, window):
 
 
 def find_best_window(lesions, labels):
-    all_windows = [(start, end) for start in range(100, 4000, 100) for end in range(start+100, 4000, 100)]
+    all_windows = [(start, end) for start in range(100, 4000, 100) for end in range(start + 100, 4000, 100)]
     scores = [(size_vs_value_score(lesions, labels, window), window) for window in all_windows]
     best_window = max(scores)
     return best_window

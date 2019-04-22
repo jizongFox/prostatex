@@ -1,6 +1,8 @@
 import math
-import numpy as np
+
 import h5py
+import numpy as np
+
 from .h5_query import get_lesion_info
 
 
@@ -78,10 +80,12 @@ def get_train_data(h5_file, query_words, size_px=16):
 
     return np.asarray(X), np.asarray(y), np.asarray(lesion_attributes)
 
+
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
+
     """ Example usage: """
-    h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
+    h5_file = h5py.File('/home/jizong/tmp/prostatex/h5_converter/prostatex-train.hdf5', 'r')
 
     X, y, attr = get_train_data(h5_file, ['ADC'])
 

@@ -51,7 +51,7 @@ def get_model(configuration='baseline'):
     model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
 
     ## Data
-    h5_file_location = os.path.join('C:\\Users\Jeftha\stack\Rommel\ISMI\data', 'prostatex-train.hdf5')
+    h5_file_location = os.path.join('/home/jizong/tmp/prostatex/h5_converter', 'prostatex-train.hdf5')
     h5_file = h5py.File(h5_file_location, 'r')
     train_data_list, train_labels_list, attr = get_train_data(h5_file, ['ADC'])
     windowed = []

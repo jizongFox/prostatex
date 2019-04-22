@@ -40,13 +40,13 @@ for i in range (1, len(data)):
 
 for i in range(0, len(data_matrix)):
     line = data_matrix[i][0] + '\t' + str(data_matrix[i][1]) + '\t' + str(data_matrix[i][2])
-    print line
+    print (line)
 
-print
+print()
 
 line = data_matrix[i][0] + '\t' + (data_matrix[0][1]) + '\t\t\t' + (data_matrix[0][2])
-print line
+print (line)
 
 for i in range(1, len(data_matrix)):
     line = data_matrix[i][0] + '\t' + str(data_matrix[i][1] / 330.0) + '\t\t' + str(data_matrix[i][2] / 330.0)
-    print line
+    print (line)

@@ -5,8 +5,8 @@ from sklearn.model_selection import train_test_split, cross_val_score, Stratifie
 from lesion_extraction_2d.lesion_extractor_2d import get_train_data
 
 
-h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
-X, y = get_train_data(h5_file, ['ADC'])
+h5_file = h5py.File('/home/jizong/tmp/prostatex/h5_converter/prostatex-train.hdf5', 'r')
+X, y,_ = get_train_data(h5_file, ['ADC'])
 
 X = np.asarray(X)
 X = np.reshape(X, (X.shape[0], X.shape[1] * X.shape[2]))

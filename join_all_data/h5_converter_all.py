@@ -131,7 +131,7 @@ if __name__ == "__main__":
         images_csv = main_folder + '\\ProstateX-TrainingLesionInformationv2\\ProstateX-Images-Train-ALL.csv'
 
     else:
-        h5file = h5py.File('prostatex-test-ALL.hdf5', 'w')y
+        h5file = h5py.File('prostatex-test-ALL.hdf5', 'w')
         main_folder = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Test'
         data_folder = main_folder + '\\All_test_data'
         images_csv = main_folder + '\\ProstateX-TestLesionInformation\\ProstateX-Images-Test-ALL.csv'

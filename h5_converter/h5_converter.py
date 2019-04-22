@@ -1,11 +1,16 @@
-import SimpleITK
+import csv
 import glob
 import os
-import csv
+
+import SimpleITK
 import h5py
+import numpy as np
+from tqdm import tqdm
+
 from loaders.seriesloader import load_dicom_series
 
 """
+This is just an index for querying.
 Script used to turn raw DICOM files and their .csv information into one HDF5 dataset. HDF5 allows
 for a great speed-up when querying the data. Requires the DOI data folder and ProstateX-Images-Train-NEW.csv 
 obtained by running csv_fix.py. (We only have to run this once to obtain the HDF5 dataset file, unless we want to 
@@ -72,12 +77,12 @@ The HDF5 set will be of the following form:
 
 def dicom_to_h5(root_dir, h5):
     sub_dirs = [x[0] for x in os.walk(root_dir)]  # Gather all subdirectories in 'root_dir'
-    for directory in sub_dirs:
-        # print(directory)
+    print(f'Found sub_dirs:{len(sub_dirs)}')
+    indicator = tqdm(sub_dirs)
+    for directory in indicator:
         file_list = glob.glob(directory + '/*.dcm')  # Look for .dcm files
         if not file_list:  # If we find a dir with a .dcm series, process it
             continue
-
         dcm_filename = file_list[0]  # Checking just one .dcm file is sufficient
         img = SimpleITK.ReadImage(dcm_filename)  # Read single .dcm file to obtain metadata
 
@@ -88,8 +93,8 @@ def dicom_to_h5(root_dir, h5):
         series_description = img.GetMetaData('0008|103e').strip()
 
         data_path = patient_id + '/' + series_description
-        print('Converting: {}'.format(data_path))
-
+        # print('Converting: {}'.format(data_path))
+        indicator.set_description('Converting: {}'.format(data_path.rjust(50, ' ')))
         # If we find a DICOM series that already exists, we check if the series number is higher. If so, remove
         # series that is already present and add this one.
         create = False
@@ -97,24 +102,27 @@ def dicom_to_h5(root_dir, h5):
         if data_path in h5:
             if h5[data_path]['pixel_array'].attrs.get('SeriesNr') < series_number:
                 del h5[data_path]
-                print('New series has higher series number, so adding.')
+                # print('New series has higher series number, so adding.')
+                indicator.set_postfix({'': 'New series has higher series number, so adding.'})
                 create = True
             else:
-                print('New series has lower series number, so not adding.')
+                pass
+                # print('New series has lower series number, so not adding.')
+                indicator.set_postfix({'': 'New series has lower series number, so not adding.'})
         else:
             create = True
 
         if create:
             group = h5.create_group(data_path)
             pixeldata = group.create_dataset('pixel_array', data=load_dicom_series(directory))
-            pixeldata.attrs.create('Age', patient_age)
+            pixeldata.attrs.create('Age', np.string_(patient_age))
             pixeldata.attrs.create('SeriesNr', series_number)
 
 
 def train_csv_to_h5(csv_file, h5):
-    with open(csv_file, 'rb') as f:
+    with open(csv_file, 'r') as f:
         reader = csv.reader(f, delimiter=',')
-        reader.next()  # Skip column names
+        reader.__next__()  # Skip column names
         for row in reader:
             patient_id = row[0]
             name = row[1]
@@ -136,11 +144,11 @@ def train_csv_to_h5(csv_file, h5):
             pathname = patient_id + '/' + dcm_descr + '/lesions/' + finding_id
 
             if pathname in h5:
-                print('Skipping duplicate {}'.format(pathname))
+                # print('Skipping duplicate {}'.format(pathname))
                 continue
             else:
                 group = h5.create_group(pathname)
-                group.attrs.create('Name', name)
+                group.attrs.create('Name', np.string_(name))
                 group.attrs.create('Pos', pos, dtype='S10')
                 group.attrs.create('WorldMatrix', world_matrix, dtype='S10')
                 group.attrs.create('ijk', ijk, dtype='S10')
@@ -171,18 +179,24 @@ if __name__ == "__main__":
     """Example usage: """
     # Example usage for train set
     h5file = h5py.File('prostatex-train.hdf5', 'w')
-    dcm_folder = 'C:\Users\Jeftha\Downloads\DOI'
-    images_train_csv = 'C:\Users\Jeftha\Downloads\ProstateX-TrainingLesionInformationv2' \
-                       '\ProstateX-TrainingLesionInformationv2\ProstateX-Images-Train-NEW.csv'
+    # dcm_folder = 'C:\Users\Jeftha\Downloads\DOI'
+    # images_train_csv = 'C:\Users\Jeftha\Downloads\ProstateX-TrainingLesionInformationv2' \
+    #                    '\ProstateX-TrainingLesionInformationv2\ProstateX-Images-Train-NEW.csv'
+
+    # modified by jizong
+    dcm_folder = '/media/jizong/Jizong/PROSTATEx'
+    images_train_csv = '/home/jizong/tmp/prostatex/h5_converter/ProstateX-Images-Train-NEW.csv'
 
     dicom_to_h5(dcm_folder, h5file)
     train_csv_to_h5(images_train_csv, h5file)
+    h5file.close()
 
     # Example usage for test set
-    # h5file = h5py.File('prostatex-test.hdf5', 'w')
-    # dcm_folder = 'C:\Users\Jeftha\Downloads\\test_set\DOI'
-    # images_test_csv = 'C:\Users\Jeftha\Downloads\ProstateX-TestLesionInformation' \
-    #                    '\ProstateX-TestLesionInformation\ProstateX-Images-Test-NEW.csv'
-    #
-    # dicom_to_h5(dcm_folder, h5file)
-    # train_csv_to_h5(images_test_csv, h5file)
+    h5file = h5py.File('prostatex-test.hdf5', 'w')
+    dcm_folder = '/media/jizong/Jizong/PROSTATEx'
+    images_test_csv = '/home/jizong/tmp/prostatex/h5_converter/ProstateX-Images-Test-NEW.csv'
+
+    dicom_to_h5(dcm_folder, h5file)
+    train_csv_to_h5(images_test_csv, h5file)
+
+    h5file.close()
